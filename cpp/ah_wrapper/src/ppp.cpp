@@ -68,6 +68,7 @@ uint16_t Unstuffer::unstuff_byte(uint8_t byte) {
     unmask_next_char = false;
   }
 
-  add_to_buffer(byte);
-  return 0;
+  if(!in_frame){
+    return 0;
+  }
 }

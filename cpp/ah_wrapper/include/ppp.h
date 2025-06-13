@@ -5,6 +5,7 @@
 #define FRAME_CHAR 0x7E
 #define ESC_CHAR 0x7D
 #define ESC_MASK 0x20
+static constexpr uint16_t MIN_FRAME_SIZE = 4;
 
 int ppp_stuff(uint8_t *payload, uint16_t &payload_size, uint8_t *stuffed_buffer,
               const uint16_t &stuffed_buffer_size);
@@ -17,6 +18,7 @@ private:
   uint8_t *m_buffer;
   uint16_t m_buffer_size;
   uint16_t m_idx = 0;
+  bool in_frame = false;
 
 public:
   Unstuffer(uint8_t *unstuffed_buffer, const uint16_t &unstuffed_buffer_size);
