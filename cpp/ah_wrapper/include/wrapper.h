@@ -22,6 +22,9 @@ public:
   int connect();
   int read_write_once(const std::array<float, 6> &cmd_values,
                       const Command &cmd, const uint8_t &reply_mode);
+  int write_once(const std::array<float, 6> &cmd_values,
+                 Command cmd, uint8_t reply_mode);
+  bool read_once(uint8_t reply_mode);
   Hand hand;
   size_t n_reads = 0;
   size_t n_writes = 0;
@@ -33,4 +36,6 @@ private:
   uint16_t m_stuffed_idx;
   const uint32_t baud_rate;
   std::chrono::time_point<std::chrono::steady_clock> start_time;
+  Unstuffer unstuffer;
+  size_t bytes_read;
 };
