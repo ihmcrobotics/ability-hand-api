@@ -79,7 +79,8 @@ int AHWrapper::read_write_once(const std::array<float, 6> &cmd_values,
     // printf("%f %f %f %f %f %f\n", hand.pos[0], hand.pos[1], hand.pos[2],
     //        hand.pos[3], hand.pos[4], hand.pos[5]);
   }
-
+  bytes_read = 0;
+  unstuffer = Unstuffer(m_buffer.data(), RX_BUF_SIZE);
   return 0;
 }
 
@@ -115,8 +116,6 @@ bool AHWrapper::read_once(uint8_t reply_mode) {
       else {
         std::printf("Checksum failed\n");
       }
-      bytes_read = 0;
-      unstuffer = Unstuffer(m_buffer.data(), RX_BUF_SIZE);
       return true;
     }
   }
