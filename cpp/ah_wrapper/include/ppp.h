@@ -5,7 +5,6 @@
 #define FRAME_CHAR 0x7E
 #define ESC_CHAR 0x7D
 #define ESC_MASK 0x20
-static constexpr uint16_t MIN_FRAME_SIZE = 4;
 
 int ppp_stuff(uint8_t *payload, uint16_t &payload_size, uint8_t *stuffed_buffer,
               const uint16_t &stuffed_buffer_size);

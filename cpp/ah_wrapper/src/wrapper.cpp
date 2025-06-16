@@ -9,10 +9,10 @@ uint16_t MAX_READ = 128;
 
 AHWrapper::AHWrapper(const uint8_t &hand_addr, const uint32_t &b_rate)
     : hand(hand_addr), baud_rate(b_rate),
-    unstuffer_(rx_buf_, RX_BUF_SIZE),
-    stuffed_buf_(MAX_STUFFED),
-    bytes_read_(0),
-    attempts_(0) {}
+    unstuffer(rx_buf, RX_BUF_SIZE),
+    stuffed_buf(MAX_STUFFED),
+    bytes_read(0),
+    attempts(0) {}
 
 AHWrapper::~AHWrapper() {
   printf("Closing connection to Hand %d\n", hand.address);
@@ -102,34 +102,34 @@ int AHWrapper::write_once(const std::array<float, 6> &cmd_values,
 }
 
 bool AHWrapper::read_once(uint8_t reply_mode) {
-  int result = read_serial(m_stuffed_buffer.data() + bytes_read_, MAX_READ);
+  int result = read_serial(m_stuffed_buffer.data() + bytes_read, MAX_READ);
   if (result <= 0) {
     return false;
   }
-  if (bytes_read_ + result > m_stuffed_buffer.size()) {
+  if (bytes_read + result > m_stuffed_buffer.size()) {
     // too much data, reset parser and start over
-    bytes_read_ = 0;
-    attempts_ = 0;
-    unstuffer_ = Unstuffer(rx_buf_, RX_BUF_SIZE);
+    bytes_read = 0;
+    attempts = 0;
+    unstuffer = Unstuffer(rx_buf, RX_BUF_SIZE);
     return false;
   }
-  for (uint16_t idx = bytes_read_; idx < bytes_read_ + result; ++idx) {
-    uint16_t frame_len = unstuffer_.unstuff_byte(m_stuffed_buffer[idx]);
+  for (uint16_t idx = bytes_read; idx < bytes_read + result; ++idx) {
+    uint16_t frame_len = unstuffer.unstuff_byte(m_stuffed_buffer[idx]);
     if (frame_len > 0) {
-      if (compute_checksum(rx_buf_, frame_len)) {
+      if (compute_checksum(rx_buf, frame_len)) {
         ++n_reads;
-        parse_packet(rx_buf_, frame_len, hand, reply_mode);
+        parse_packet(rx_buf, frame_len, hand, reply_mode);
       }
       else {
         std::printf("Checksum failed\n");
       }
-      bytes_read_ = 0;
-      attempts_ = 0;
-      unstuffer_ = Unstuffer(rx_buf_, RX_BUF_SIZE);
+      bytes_read = 0;
+      attempts = 0;
+      unstuffer = Unstuffer(rx_buf, RX_BUF_SIZE);
       return true;
     }
   }
-  bytes_read_ += result;
-  ++attempts_;
+  bytes_read += result;
+  ++attempts;
   return false;
 }

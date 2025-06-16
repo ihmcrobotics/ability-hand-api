@@ -41,9 +41,9 @@ private:
   static constexpr size_t MAX_STUFFED = STUFFED_BUFFER_SIZE;
   static constexpr size_t RX_BUF_SIZE = MAX_STUFFED*2;
   static constexpr uint32_t MAX_ATTEMPTS = 150000;
-  Unstuffer unstuffer_;
-  std::vector<uint8_t> stuffed_buf_;
-  size_t bytes_read_;
-  uint32_t attempts_;
-  uint8_t rx_buf_[RX_BUF_SIZE];
+  Unstuffer unstuffer;
+  std::vector<uint8_t> stuffed_buf;
+  size_t bytes_read;
+  uint32_t attempts;
+  uint8_t rx_buf[RX_BUF_SIZE];
 };
