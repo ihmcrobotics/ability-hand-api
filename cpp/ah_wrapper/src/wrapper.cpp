@@ -10,8 +10,7 @@ uint16_t MAX_READ = 256;
 AHWrapper::AHWrapper(const uint8_t &hand_addr, const uint32_t &b_rate)
     : hand(hand_addr), baud_rate(b_rate),
     unstuffer(m_buffer.data(), RX_BUF_SIZE),
-    bytes_read(0),
-    attempts(0) {}
+    bytes_read(0) {}
 
 AHWrapper::~AHWrapper() {
   printf("Closing connection to Hand %d\n", hand.address);

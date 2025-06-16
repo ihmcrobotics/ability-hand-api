@@ -39,5 +39,4 @@ private:
   static constexpr size_t RX_BUF_SIZE = STUFFED_BUFFER_SIZE*2;
   Unstuffer unstuffer;
   size_t bytes_read;
-  uint32_t attempts;
 };
