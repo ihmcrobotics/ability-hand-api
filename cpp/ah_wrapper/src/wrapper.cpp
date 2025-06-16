@@ -5,12 +5,11 @@
 #include "api.h"
 #include "parser.h"
 #include "serial_helper.h"
-uint16_t MAX_READ = 128;
+uint16_t MAX_READ = 256;
 
 AHWrapper::AHWrapper(const uint8_t &hand_addr, const uint32_t &b_rate)
     : hand(hand_addr), baud_rate(b_rate),
-    unstuffer(rx_buf, RX_BUF_SIZE),
-    stuffed_buf(MAX_STUFFED),
+    unstuffer(m_buffer.data(), RX_BUF_SIZE),
     bytes_read(0),
     attempts(0) {}
 
@@ -83,6 +82,7 @@ int AHWrapper::read_write_once(const std::array<float, 6> &cmd_values,
 
   return 0;
 }
+
 int AHWrapper::write_once(const std::array<float, 6> &cmd_values,
       Command cmd,
       uint8_t reply_mode)
@@ -93,9 +93,8 @@ int AHWrapper::write_once(const std::array<float, 6> &cmd_values,
     case CURRENT:  m_buffer_idx = build_tor_msg(cmd_values, m_buffer, hand.address, reply_mode); break;
     case DUTY:     m_buffer_idx = build_dut_msg(cmd_values, m_buffer, hand.address, reply_mode); break;
   }
-  m_stuffed_idx = ppp_stuff(
-      m_buffer.data(), m_buffer_idx,
-      m_stuffed_buffer.data(), STUFFED_BUFFER_SIZE);
+  m_stuffed_idx = ppp_stuff(m_buffer.data(), m_buffer_idx,
+                            m_stuffed_buffer.data(), STUFFED_BUFFER_SIZE);
   serial_write(m_stuffed_buffer.data(), m_stuffed_idx);
   ++n_writes;
   return m_stuffed_idx;
@@ -106,30 +105,21 @@ bool AHWrapper::read_once(uint8_t reply_mode) {
   if (result <= 0) {
     return false;
   }
-  if (bytes_read + result > m_stuffed_buffer.size()) {
-    // too much data, reset parser and start over
-    bytes_read = 0;
-    attempts = 0;
-    unstuffer = Unstuffer(rx_buf, RX_BUF_SIZE);
-    return false;
-  }
   for (uint16_t idx = bytes_read; idx < bytes_read + result; ++idx) {
     uint16_t frame_len = unstuffer.unstuff_byte(m_stuffed_buffer[idx]);
     if (frame_len > 0) {
-      if (compute_checksum(rx_buf, frame_len)) {
+      if (compute_checksum(m_buffer.data(), frame_len)) {
         ++n_reads;
-        parse_packet(rx_buf, frame_len, hand, reply_mode);
+        parse_packet(m_buffer.data(), frame_len, hand, reply_mode);
       }
       else {
         std::printf("Checksum failed\n");
       }
       bytes_read = 0;
-      attempts = 0;
-      unstuffer = Unstuffer(rx_buf, RX_BUF_SIZE);
+      unstuffer = Unstuffer(m_buffer.data(), RX_BUF_SIZE);
       return true;
     }
   }
   bytes_read += result;
-  ++attempts;
   return false;
 }
