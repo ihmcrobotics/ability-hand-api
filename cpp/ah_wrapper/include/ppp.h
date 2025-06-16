@@ -17,7 +17,6 @@ private:
   uint8_t *m_buffer;
   uint16_t m_buffer_size;
   uint16_t m_idx = 0;
-  bool in_frame = false;
 
 public:
   Unstuffer(uint8_t *unstuffed_buffer, const uint16_t &unstuffed_buffer_size);
