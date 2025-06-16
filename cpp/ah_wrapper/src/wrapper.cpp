@@ -5,11 +5,11 @@
 #include "api.h"
 #include "parser.h"
 #include "serial_helper.h"
-uint16_t MAX_READ = 256;
+uint16_t MAX_READ = 512;
 
 AHWrapper::AHWrapper(const uint8_t &hand_addr, const uint32_t &b_rate)
     : hand(hand_addr), baud_rate(b_rate),
-    unstuffer(m_buffer.data(), RX_BUF_SIZE),
+    unstuffer(m_buffer.data(), BUFFER_SIZE),
     bytes_read(0) {}
 
 AHWrapper::~AHWrapper() {
@@ -78,8 +78,6 @@ int AHWrapper::read_write_once(const std::array<float, 6> &cmd_values,
     // printf("%f %f %f %f %f %f\n", hand.pos[0], hand.pos[1], hand.pos[2],
     //        hand.pos[3], hand.pos[4], hand.pos[5]);
   }
-  bytes_read = 0;
-  unstuffer = Unstuffer(m_buffer.data(), RX_BUF_SIZE);
   return 0;
 }
 
@@ -97,6 +95,8 @@ int AHWrapper::write_once(const std::array<float, 6> &cmd_values,
                             m_stuffed_buffer.data(), STUFFED_BUFFER_SIZE);
   serial_write(m_stuffed_buffer.data(), m_stuffed_idx);
   ++n_writes;
+  bytes_read = 0;
+  unstuffer = Unstuffer(m_buffer.data(), BUFFER_SIZE);
   return m_stuffed_idx;
 }
 

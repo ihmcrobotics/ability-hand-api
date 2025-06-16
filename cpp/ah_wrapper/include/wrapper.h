@@ -36,7 +36,6 @@ private:
   uint16_t m_stuffed_idx;
   const uint32_t baud_rate;
   std::chrono::time_point<std::chrono::steady_clock> start_time;
-  static constexpr size_t RX_BUF_SIZE = STUFFED_BUFFER_SIZE*2;
   Unstuffer unstuffer;
   size_t bytes_read;
 };
