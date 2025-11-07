@@ -21,6 +21,7 @@ public:
   ~AHWrapper();
   int connect(const char* port);
   int read(const uint8_t &reply_mode);
+  void reset_read();
   int write(const std::array<float, 6> &cmd_values,
             const Command &cmd, const uint8_t &reply_mode);
   int read_write_once(const std::array<float, 6> &cmd_values,

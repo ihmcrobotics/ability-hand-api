@@ -49,8 +49,7 @@ int AHWrapper::read(const uint8_t &reply_mode) {
       continue;
 
     // Full frame received so we reset
-    unstuffer = Unstuffer(m_buffer.data(), BUFFER_SIZE);
-    total_bytes_read = 0;
+    reset_read();
 
     // If checksum passed we parse the packet and return frame length
     if (compute_checksum(m_buffer.data(), frame_length)) {
@@ -65,6 +64,13 @@ int AHWrapper::read(const uint8_t &reply_mode) {
 
   total_bytes_read += bytes_read;
   return -1;
+}
+
+void AHWrapper::reset_read() {
+  if (total_bytes_read != 0) {
+    unstuffer = Unstuffer(m_buffer.data(), BUFFER_SIZE);
+    total_bytes_read = 0;
+  }
 }
 
 int AHWrapper::write(const std::array<float, 6> &cmd_values,
@@ -92,6 +98,8 @@ int AHWrapper::write(const std::array<float, 6> &cmd_values,
                             m_stuffed_buffer.data(), STUFFED_BUFFER_SIZE);
   serial_write(m_stuffed_buffer.data(), m_stuffed_idx);
   ++n_writes; // Can't determine if write fails or succeeds
+
+  reset_read();
 
   return m_stuffed_idx;
 }
