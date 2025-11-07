@@ -20,6 +20,9 @@ public:
   AHWrapper(const uint8_t &hand_addr, const uint32_t &b_rate);
   ~AHWrapper();
   int connect(const char* port);
+  int read(const uint8_t &reply_mode);
+  int write(const std::array<float, 6> &cmd_values,
+            const Command &cmd, const uint8_t &reply_mode);
   int read_write_once(const std::array<float, 6> &cmd_values,
                       const Command &cmd, const uint8_t &reply_mode);
   Hand hand;
@@ -33,4 +36,7 @@ private:
   uint16_t m_stuffed_idx;
   const uint32_t baud_rate;
   std::chrono::time_point<std::chrono::steady_clock> start_time;
+
+  Unstuffer unstuffer;
+  int total_bytes_read = 0;
 };
