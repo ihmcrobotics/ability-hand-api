@@ -33,7 +33,7 @@ int connect_to_usb_serial(HANDLE *serial_handle, const char *com_port_name,
 
 HANDLE serialport;
 
-int autoconnect_serial(const uint32_t &baud_rate) {
+int autoconnect_serial(const uint32_t &baud_rate, const char* port) {
   char namestr[16] = {0};
   for (int i = 0; i < 255; i++) {
     int rl = sprintf_s(namestr, "\\\\.\\COM%d", i);
