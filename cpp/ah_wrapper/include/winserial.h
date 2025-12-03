@@ -6,7 +6,7 @@
 class AHSerial {
 public:
   // Connects to the specified port using the specified baud rate
-  AHSerial(const uint32_t baud_rate, const char* port = "");
+  AHSerial(const uint32_t baud_rate, const char* port);
   // Disconnect from the serial port
   ~AHSerial();
 

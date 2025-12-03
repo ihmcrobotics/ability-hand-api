@@ -10,7 +10,7 @@
 
 #include "linux_serial.h"
 
-AHSerial::AHSerial(const uint32_t &baud_rate, const char *port = "") {
+AHSerial::AHSerial(const uint32_t &baud_rate, const char *port) {
   char filename[32] = {0}; // some large enough empty buffer
   
   // If user declared port
