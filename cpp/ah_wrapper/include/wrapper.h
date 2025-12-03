@@ -4,11 +4,7 @@
 
 #include "hand.h"
 #include "ppp.h"
-#ifdef PLATFORM_WINDOWS
-#include "winserial.h"
-#elif defined(PLATFORM_LINUX)
 #include "linux_serial.h"
-#endif
 
 const uint16_t BUFFER_SIZE = 512;
 const uint16_t STUFFED_BUFFER_SIZE = BUFFER_SIZE * 2;
@@ -31,6 +27,8 @@ public:
   size_t n_writes = 0;
 
 private:
+  int serial_port = -1;
+
   std::array<uint8_t, BUFFER_SIZE> m_buffer;
   std::array<uint8_t, STUFFED_BUFFER_SIZE> m_stuffed_buffer;
   uint16_t m_buffer_idx;

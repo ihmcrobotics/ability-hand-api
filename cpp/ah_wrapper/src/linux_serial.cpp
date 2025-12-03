@@ -10,10 +10,10 @@
 
 #include "linux_serial.h"
 
-int serial_port = -1;
-char filename[32] = {0}; // some large enough empty buffer
-
 int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
+  int serial_port = -1;
+  char filename[32] = {0}; // some large enough empty buffer
+  
   // If user declared port
   if (port) {
     strncpy(filename, port, sizeof(filename) - 1);
@@ -24,7 +24,7 @@ int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
     serial_port = open(filename, O_RDWR);
     if (serial_port < 0) {
       printf("Error %i from open %s: %s\n", errno, filename, strerror(errno));
-      return errno;
+      return serial_port;
     }
   } else {
     // Attempt to auto find serial port
@@ -42,7 +42,7 @@ int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
   // All attempts to connect to serial failed
   if (serial_port < 0) {
     printf("Exiting due to no serial port found\n");
-    return errno;
+    return serial_port;
   }
 
   // Setup serial connection
@@ -82,15 +82,15 @@ int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
   ioctl(serial_port, TCSETS2, &tty);
 
   printf("Connected to %s successfully\n", filename);
-  return 0;
+  return serial_port;
 }
 
-int serial_write(uint8_t *data, uint16_t &size) {
+int serial_write(int serial_port, uint8_t *data, uint16_t &size) {
   return write(serial_port, data, size);
 }
 
-int read_serial(uint8_t *readbuf, uint16_t &bufsize) {
+int read_serial(int serial_port, uint8_t *readbuf, uint16_t &bufsize) {
   return read(serial_port, readbuf, bufsize);
 }
 
-void close_serial(void) { close(serial_port); }
+void close_serial(int serial_port) { close(serial_port); }
