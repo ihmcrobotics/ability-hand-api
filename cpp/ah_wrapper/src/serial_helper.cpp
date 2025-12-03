@@ -1,11 +1,5 @@
 #include "serial_helper.h"
 
-#ifdef PLATFORM_WINDOWS
-#include "winserial.h"
-#elif defined(PLATFORM_LINUX)
-#include "linux_serial.h"
-#endif
-
 uint16_t MAX_READ_SIZE = 128;
 
 bool compute_checksum(uint8_t *buffer, uint16_t &buffer_size) {
@@ -21,7 +15,8 @@ bool compute_checksum(uint8_t *buffer, uint16_t &buffer_size) {
   }
 }
 
-int read_until(uint8_t *stuffed_buffer, uint8_t *buffer,
+int read_until(const AHSerial *serial, 
+               uint8_t *stuffed_buffer, uint8_t *buffer,
                const uint16_t &stuffed_buffer_size,
                const uint16_t &buffer_size) {
   int bytes_read = 0;
@@ -35,7 +30,7 @@ int read_until(uint8_t *stuffed_buffer, uint8_t *buffer,
       return -1;
     }
 
-    int result = read_serial(stuffed_buffer + bytes_read, MAX_READ_SIZE);
+    int result = serial->read_serial(stuffed_buffer + bytes_read, MAX_READ_SIZE);
 
     for (uint16_t i = bytes_read; i < result + bytes_read; ++i) {
       uint16_t size = unstuffer.unstuff_byte(stuffed_buffer[i]);

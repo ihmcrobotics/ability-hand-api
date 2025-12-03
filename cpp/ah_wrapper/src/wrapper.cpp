@@ -21,12 +21,14 @@ AHWrapper::~AHWrapper() {
                 (static_cast<float>(n_reads) / static_cast<float>(n_writes))) *
                    100.0
             << std::endl;
-  close_serial();
+  if (serial)
+    delete serial;
 }
 
 int AHWrapper::connect(const char* port) {
   start_time = std::chrono::steady_clock::now();
-  if (autoconnect_serial(baud_rate, port)) {
+  serial = new AHSerial(baud_rate, port);
+  if (!serial->connected()) {
     return 1; // Could not connect
   } else {
     printf("Connected to Hand %d\n", hand.address);
@@ -37,7 +39,7 @@ int AHWrapper::connect(const char* port) {
 int AHWrapper::read(const uint8_t &reply_mode) {
   // Read some bytes
   uint16_t remaining_capacity = STUFFED_BUFFER_SIZE - total_bytes_read;
-  int bytes_read = read_serial(m_stuffed_buffer.data() + total_bytes_read, remaining_capacity);
+  int bytes_read = serial->read_serial(m_stuffed_buffer.data() + total_bytes_read, remaining_capacity);
 
   // Loop through newly read bytes
   for (int i = total_bytes_read; i < total_bytes_read + bytes_read; ++i) {
@@ -96,7 +98,7 @@ int AHWrapper::write(const std::array<float, 6> &cmd_values,
 
   m_stuffed_idx = ppp_stuff(m_buffer.data(), m_buffer_idx,
                             m_stuffed_buffer.data(), STUFFED_BUFFER_SIZE);
-  serial_write(m_stuffed_buffer.data(), m_stuffed_idx);
+  serial->serial_write(m_stuffed_buffer.data(), m_stuffed_idx);
   ++n_writes; // Can't determine if write fails or succeeds
 
   reset_read();
@@ -132,12 +134,13 @@ int AHWrapper::read_write_once(const std::array<float, 6> &cmd_values,
 
   m_stuffed_idx = ppp_stuff(m_buffer.data(), m_buffer_idx,
                             m_stuffed_buffer.data(), STUFFED_BUFFER_SIZE);
-  serial_write(m_stuffed_buffer.data(), m_stuffed_idx);
+  serial->serial_write(m_stuffed_buffer.data(), m_stuffed_idx);
   ++n_writes; // Can't determine if write fails or succeeds
 
   int unstuffed_bytes_read =
-      read_until(m_stuffed_buffer.data(), m_buffer.data(), STUFFED_BUFFER_SIZE,
-                 BUFFER_SIZE);
+      read_until(serial,
+                 m_stuffed_buffer.data(), m_buffer.data(),
+                 STUFFED_BUFFER_SIZE, BUFFER_SIZE);
   if (unstuffed_bytes_read > 0) {
     // Response received, unstuffed and passed checksum
     ++n_reads;

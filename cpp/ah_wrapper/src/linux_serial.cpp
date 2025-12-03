@@ -10,10 +10,9 @@
 
 #include "linux_serial.h"
 
-int serial_port = -1;
-char filename[32] = {0}; // some large enough empty buffer
-
-int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
+AHSerial::AHSerial(const uint32_t &baud_rate, const char *port = "") {
+  char filename[32] = {0}; // some large enough empty buffer
+  
   // If user declared port
   if (port) {
     strncpy(filename, port, sizeof(filename) - 1);
@@ -24,7 +23,7 @@ int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
     serial_port = open(filename, O_RDWR);
     if (serial_port < 0) {
       printf("Error %i from open %s: %s\n", errno, filename, strerror(errno));
-      return errno;
+      return;
     }
   } else {
     // Attempt to auto find serial port
@@ -42,7 +41,7 @@ int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
   // All attempts to connect to serial failed
   if (serial_port < 0) {
     printf("Exiting due to no serial port found\n");
-    return errno;
+    return;
   }
 
   // Setup serial connection
@@ -72,8 +71,8 @@ int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
   tty.c_cflag &= ~CBAUD;
   tty.c_cflag |= CBAUDEX;
   // tty.c_cflag |= BOTHER;
-  tty.c_ispeed = BAUD_RATE;
-  tty.c_ospeed = BAUD_RATE;
+  tty.c_ispeed = baud_rate;
+  tty.c_ospeed = baud_rate;
 
   // timeout=0
   tty.c_cc[VTIME] = 0;
@@ -82,15 +81,29 @@ int autoconnect_serial(const uint32_t &BAUD_RATE, const char *port) {
   ioctl(serial_port, TCSETS2, &tty);
 
   printf("Connected to %s successfully\n", filename);
-  return 0;
 }
 
-int serial_write(uint8_t *data, uint16_t &size) {
+AHSerial::~AHSerial() {
+  if (serial_port >= 0)
+    close(serial_port);
+
+  serial_port = -1;
+}
+
+bool AHSerial::connected() const {
+  return serial_port >= 0;
+}
+
+int AHSerial::serial_write(uint8_t *data, uint16_t &size) const {
+  if (serial_port < 0)
+    return 0;
+
   return write(serial_port, data, size);
 }
 
-int read_serial(uint8_t *readbuf, uint16_t &bufsize) {
+int AHSerial::read_serial(uint8_t *readbuf, uint16_t &bufsize) const {
+  if (serial_port < 0)
+    return 0;
+
   return read(serial_port, readbuf, bufsize);
 }
-
-void close_serial(void) { close(serial_port); }

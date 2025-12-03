@@ -31,6 +31,8 @@ public:
   size_t n_writes = 0;
 
 private:
+  AHSerial *serial;
+
   std::array<uint8_t, BUFFER_SIZE> m_buffer;
   std::array<uint8_t, STUFFED_BUFFER_SIZE> m_stuffed_buffer;
   uint16_t m_buffer_idx;

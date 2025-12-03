@@ -31,36 +31,47 @@ int connect_to_usb_serial(HANDLE *serial_handle, const char *com_port_name,
   return rc;
 }
 
-HANDLE serialport;
-
-int autoconnect_serial(const uint32_t &baud_rate, const char* port) {
+AHSerial::AHSerial(const uint32_t &baud_rate, const char* port) {
   char namestr[16] = {0};
   for (int i = 0; i < 255; i++) {
     int rl = sprintf_s(namestr, "\\\\.\\COM%d", i);
     int rc = connect_to_usb_serial(&serialport, namestr, baud_rate);
     if (rc != 0) {
       printf("Connected to COM port %s successfully\n", namestr);
-      return 0;
+      connected = true;
+      return;
     }
   }
   printf("No COM ports found\n");
-  return -1;
+  return;
 }
 
-int serial_write(uint8_t *data, int size) {
+AHSerial::~AHSerial() {
+  if (connected)
+    CloseHandle(serialport);
+
+  connected = false;
+}
+
+bool AHSerial::connected() const {
+  return connected;
+}
+
+int AHSerial::serial_write(uint8_t *data, int size) const {
+  if (!connected)
+    return 0;
+
   LPDWORD written = 0;
   int wfrc = WriteFile(serialport, data, size, written, NULL);
   return (int)written;
 }
 
-int read_serial(uint8_t *readbuf, int bufsize) {
+int AHSerial::read_serial(uint8_t *readbuf, int bufsize) const {
+  if (!connected)
+    return 0;
+
   LPDWORD num_bytes_read = 0;
   int rc = ReadFile(serialport, readbuf, bufsize, (LPDWORD)(&num_bytes_read),
                     NULL); //
   return (int)num_bytes_read;
-}
-
-void close_serial(void) {
-  // close serial port
-  CloseHandle(serialport);
 }
